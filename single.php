@@ -93,7 +93,7 @@ while ( have_posts() ) :
 			<!-- Blog Header -->
 			<header class="single-post-article-header">
 				<h1 class="terminal-glow">
-					# <?php echo esc_html( strtoupper( $slug ) ); ?>.MD
+					# <?php echo esc_html( get_the_title() ); ?>
 					<?php if ( $enable_cursor ) : ?>
 						<span class="cli-cursor"></span>
 					<?php endif; ?>
@@ -124,41 +124,41 @@ while ( have_posts() ) :
 					</div>
 					<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 						<?php if ( $show_share_x ) : ?>
-							<a class="button ppp-social-popup" href="https://twitter.com/intent/tweet?text=<?php echo $title_encoded; ?>&amp;url=<?php echo $permalink_encoded; ?>" onclick="window.open(this.href, 'shareWindow', 'width=600,height=500,top='+(screen.height/2-250)+',left='+(screen.width/2-300)); return false;" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px;">
+							<button type="button" class="ppp-btn ppp-share-btn" data-platform="twitter" data-url="<?php echo $permalink_encoded; ?>" data-text="<?php echo $title_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
 								<span class="material-symbols-outlined" style="font-size: 1rem;">share</span>
 								<span>X / TWITTER</span>
-							</a>
+							</button>
 						<?php endif; ?>
 
 						<?php if ( $show_share_facebook ) : ?>
-							<a class="button ppp-social-popup" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $permalink_encoded; ?>" onclick="window.open(this.href, 'shareWindow', 'width=600,height=500,top='+(screen.height/2-250)+',left='+(screen.width/2-300)); return false;" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px;">
+							<button type="button" class="ppp-btn ppp-share-btn" data-platform="facebook" data-url="<?php echo $permalink_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
 								<span class="material-symbols-outlined" style="font-size: 1rem;">public</span>
 								<span>FACEBOOK</span>
-							</a>
+							</button>
 						<?php endif; ?>
 
 						<?php if ( $show_share_linkedin ) : ?>
-							<a class="button ppp-social-popup" href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $permalink_encoded; ?>" onclick="window.open(this.href, 'shareWindow', 'width=600,height=500,top='+(screen.height/2-250)+',left='+(screen.width/2-300)); return false;" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px;">
+							<button type="button" class="ppp-btn ppp-share-btn" data-platform="linkedin" data-url="<?php echo $permalink_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
 								<span class="material-symbols-outlined" style="font-size: 1rem;">work</span>
 								<span>LINKEDIN</span>
-							</a>
+							</button>
 						<?php endif; ?>
 
 						<?php if ( $show_share_reddit ) : ?>
-							<a class="button ppp-social-popup" href="https://reddit.com/submit?url=<?php echo $permalink_encoded; ?>&amp;title=<?php echo $title_encoded; ?>" onclick="window.open(this.href, 'shareWindow', 'width=600,height=500,top='+(screen.height/2-250)+',left='+(screen.width/2-300)); return false;" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px;">
+							<button type="button" class="ppp-btn ppp-share-btn" data-platform="reddit" data-url="<?php echo $permalink_encoded; ?>" data-text="<?php echo $title_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
 								<span class="material-symbols-outlined" style="font-size: 1rem;">forum</span>
 								<span>REDDIT</span>
-							</a>
+							</button>
 						<?php endif; ?>
 
 						<?php if ( $show_share_email ) : ?>
-							<a class="button" href="mailto:?subject=<?php echo $title_encoded; ?>&amp;body=<?php echo $title_encoded; ?>%0A%0A<?php echo $permalink_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+							<a class="ppp-btn" href="mailto:?subject=<?php echo $title_encoded; ?>&amp;body=<?php echo $title_encoded; ?>%0A%0A<?php echo $permalink_encoded; ?>" style="display: inline-flex; align-items: center; gap: 6px;">
 								<span class="material-symbols-outlined" style="font-size: 1rem;">mail</span>
 								<span>EMAIL</span>
 							</a>
 						<?php endif; ?>
 
-						<button type="button" class="button" id="copy-post-link-btn" data-url="<?php echo esc_url( get_permalink() ); ?>" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: transparent;">
+						<button type="button" class="ppp-btn" id="copy-post-link-btn" data-url="<?php echo esc_url( get_permalink() ); ?>" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: transparent;">
 							<span class="material-symbols-outlined" style="font-size: 1rem;">link</span>
 							<span id="copy-btn-text">COPY_LINK</span>
 						</button>

@@ -230,6 +230,24 @@ function playpixelpro_customize_register( $wp_customize ) {
 		)
 	);
 
+	// Enable Hero Terminal Typing Animation Toggle
+	$wp_customize->add_setting(
+		'playpixelpro_enable_hero_typing',
+		array(
+			'default'           => true,
+			'sanitize_callback' => 'playpixelpro_sanitize_checkbox',
+		)
+	);
+	$wp_customize->add_control(
+		'playpixelpro_enable_hero_typing',
+		array(
+			'label'       => __( 'Enable Hero Terminal Typing Animation', 'playpixelpro' ),
+			'description' => __( 'Simulate live terminal letter-by-letter typing animation on homepage visit.', 'playpixelpro' ),
+			'section'     => 'playpixelpro_header_section',
+			'type'        => 'checkbox',
+		)
+	);
+
 	// Hero Line 1 Text
 	$wp_customize->add_setting(
 		'playpixelpro_hero_line1',

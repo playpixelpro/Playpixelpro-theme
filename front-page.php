@@ -22,6 +22,10 @@ $hero_line3        = get_theme_mod( 'playpixelpro_hero_line3', 'Status: All syst
 $hero_line4        = get_theme_mod( 'playpixelpro_hero_line4', 'Environment: Production // Node_01' );
 $hero_command      = get_theme_mod( 'playpixelpro_hero_command', 'deploy --android --web' );
 
+$enable_typing     = get_theme_mod( 'playpixelpro_enable_hero_typing', true );
+$current_delay     = 0;
+$step_delay        = 1400;
+
 $github_url      = get_theme_mod( 'playpixelpro_github_url', 'https://github.com/dindoquitor' );
 $github_btn_text = get_theme_mod( 'playpixelpro_github_btn_text', 'VIEW_GITHUB' );
 
@@ -67,43 +71,47 @@ if ( $entries_count < 3 || $entries_count > 9 ) {
 			</div>
 			<span class="window-title"><?php echo esc_html( $hero_window_title ); ?></span>
 		</div>
-		<div class="terminal-body">
+		<div class="terminal-body" id="hero-terminal-screen">
 			<?php if ( ! empty( $hero_line1 ) ) : ?>
-				<p style="margin-bottom: 8px;">
+				<p class="hero-term-line<?php echo $enable_typing ? ' typing-line' : ''; ?>"<?php echo $enable_typing ? ' data-delay="' . esc_attr( $current_delay ) . '"' : ''; ?> style="margin-bottom: 8px;">
 					<span class="line-numbers">01</span>
 					<span style="color: var(--gold);">info</span>
-					<?php echo esc_html( $hero_line1 ); ?>
+					<span class="typing-text" data-text="<?php echo esc_attr( $hero_line1 ); ?>"><?php echo esc_html( $hero_line1 ); ?></span>
 				</p>
+				<?php $current_delay += $step_delay; ?>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $hero_line2 ) ) : ?>
-				<p style="margin-bottom: 8px;">
+				<p class="hero-term-line<?php echo $enable_typing ? ' typing-line' : ''; ?>"<?php echo $enable_typing ? ' data-delay="' . esc_attr( $current_delay ) . '"' : ''; ?> style="margin-bottom: 8px;">
 					<span class="line-numbers">02</span>
 					<span style="color: var(--gold);">info</span>
-					<?php echo esc_html( $hero_line2 ); ?>
+					<span class="typing-text" data-text="<?php echo esc_attr( $hero_line2 ); ?>"><?php echo esc_html( $hero_line2 ); ?></span>
 				</p>
+				<?php $current_delay += $step_delay; ?>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $hero_line3 ) ) : ?>
-				<p style="margin-bottom: 8px;">
+				<p class="hero-term-line<?php echo $enable_typing ? ' typing-line' : ''; ?>"<?php echo $enable_typing ? ' data-delay="' . esc_attr( $current_delay ) . '"' : ''; ?> style="margin-bottom: 8px;">
 					<span class="line-numbers">03</span>
 					<span style="color: var(--gold);">info</span>
-					<?php echo esc_html( $hero_line3 ); ?>
+					<span class="typing-text" data-text="<?php echo esc_attr( $hero_line3 ); ?>"><?php echo esc_html( $hero_line3 ); ?></span>
 				</p>
+				<?php $current_delay += $step_delay; ?>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $hero_line4 ) ) : ?>
-				<p style="margin-bottom: 16px;">
+				<p class="hero-term-line<?php echo $enable_typing ? ' typing-line' : ''; ?>"<?php echo $enable_typing ? ' data-delay="' . esc_attr( $current_delay ) . '"' : ''; ?> style="margin-bottom: 16px;">
 					<span class="line-numbers">04</span>
 					<span style="color: var(--gold);">info</span>
-					<?php echo esc_html( $hero_line4 ); ?>
+					<span class="typing-text" data-text="<?php echo esc_attr( $hero_line4 ); ?>"><?php echo esc_html( $hero_line4 ); ?></span>
 				</p>
+				<?php $current_delay += $step_delay; ?>
 			<?php endif; ?>
 
-			<p style="font-size: 1.3rem; font-weight: 700; margin-top: 24px; margin-bottom: 0;">
+			<p class="hero-term-line<?php echo $enable_typing ? ' typing-line' : ''; ?>"<?php echo $enable_typing ? ' data-delay="' . esc_attr( $current_delay ) . '" data-cursor="true"' : ''; ?> style="font-size: 1.3rem; font-weight: 700; margin-top: 24px; margin-bottom: 0;">
 				<span class="line-numbers">05</span>
-				<span><?php echo esc_html( $prompt_prefix ); ?></span>
-				<span style="color: var(--gold);"><?php echo esc_html( $hero_command ); ?></span>
+				<span><?php echo esc_html( $prompt_prefix ); ?> </span>
+				<span class="typing-text" style="color: var(--gold);" data-text="<?php echo esc_attr( $hero_command ); ?>"><?php echo esc_html( $hero_command ); ?></span>
 				<?php if ( $enable_cursor ) : ?>
 					<span class="cli-cursor"></span>
 				<?php endif; ?>

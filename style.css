@@ -429,6 +429,15 @@ button[type="submit"]:active,
 	padding: 28px;
 }
 
+.hero-term-line {
+	min-height: 1.5em;
+	word-break: break-word;
+}
+
+.hero-term-line .typing-text {
+	display: inline;
+}
+
 .cli-cursor {
 	display: inline-block;
 	width: 8px;
@@ -2221,4 +2230,154 @@ legend.contact-nano-legend {
 	background: var(--gold, #eec35e);
 	color: #16130b;
 	font-weight: bold;
+}
+
+/* =====================================================================
+   Imported RSS content normalization (PlayPixelPro Auto RSS)
+   Single posts can carry raw imported HTML (tables, figures, videos,
+   captions, blockquotes, attribution). These rules keep that content
+   inside the article column and consistent with the terminal design.
+   ===================================================================== */
+
+/* 1. Define the CSS variables the single-post template already uses.
+   --font-mono and --fg were referenced but never defined, so the
+   terminal font/color fell back inconsistently. */
+:root {
+	--font-mono: 'JetBrains Mono', 'Courier New', Consolas, monospace;
+	--fg: var(--text);
+}
+
+/* 2. Grid children must be allowed to shrink below their content width,
+   otherwise wide imported tables/images overflow the 8fr article column. */
+.single-post-grid {
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 992px) {
+	.single-post-grid {
+		grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+	}
+}
+.single-post-article {
+	min-width: 0;
+}
+
+/* 3. Wrap long unbroken tokens and human titles gracefully. */
+.single-post-article-header h1,
+.single-entry-content,
+.single-entry-content p,
+.single-entry-content li,
+.single-entry-content blockquote {
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+/* 4. Imported media: images/videos/figure/figcaption. */
+.single-entry-content img,
+.single-entry-content video {
+	max-width: 100%;
+	height: auto;
+	border: 2px solid var(--line, #4e4637);
+}
+.single-entry-content figure {
+	margin: 24px 0;
+	max-width: 100%;
+}
+.single-entry-content figcaption {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	color: var(--muted, #9a8f7d);
+	margin-top: 8px;
+	text-align: center;
+}
+
+/* 5. Wide tables scroll horizontally instead of breaking the layout. */
+.single-entry-content table {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	margin-bottom: 24px;
+	border: 2px solid var(--line, #4e4637);
+}
+.single-entry-content th,
+.single-entry-content td {
+	border: 1px solid var(--line, #4e4637);
+	padding: 8px 12px;
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+}
+.single-entry-content th {
+	color: var(--gold, #eec35e);
+	text-transform: uppercase;
+}
+
+/* 6. Blockquotes get the terminal treatment. */
+.single-entry-content blockquote {
+	border-left: 4px solid var(--gold, #eec35e);
+	margin: 24px 0;
+	padding: 8px 20px;
+	color: var(--muted, #9a8f7d);
+	font-style: italic;
+}
+
+/* 7. Source attribution rendered by the Auto RSS plugin. */
+.ppar-attribution {
+	margin-top: 32px;
+	padding: 14px 18px;
+	border: 2px dashed var(--line, #4e4637);
+	border-left: 4px solid var(--gold, #eec35e);
+	background: var(--surface, #1e1b13);
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	color: var(--muted, #9a8f7d);
+	line-height: 1.6;
+}
+.ppar-attribution a {
+	color: var(--gold, #eec35e);
+	word-break: break-all;
+}
+
+/* 8. Heading compaction on small screens (the header was very large). */
+@media (max-width: 640px) {
+	.single-post-article-header h1 {
+		font-size: 1.25rem;
+	}
+}
+
+/* ============================================================
+   Share Buttons — standalone styles so they display for ALL
+   visitors, including logged-out users.
+   (.button is scoped to .wp-core-ui and only loads for admins)
+   ============================================================ */
+.ppp-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: var(--text);
+	background: var(--surface-high);
+	border: 1px solid var(--line);
+	cursor: pointer;
+	transition: border-color 0.15s, color 0.15s, background 0.15s;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+.ppp-btn:hover,
+.ppp-btn:focus {
+	border-color: var(--gold);
+	color: var(--gold);
+	background: var(--accent-dim);
+	outline: none;
+}
+.ppp-btn:visited {
+	color: var(--text);
+}
+.ppp-btn:visited:hover {
+	color: var(--gold);
 }

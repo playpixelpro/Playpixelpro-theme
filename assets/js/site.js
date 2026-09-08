@@ -121,4 +121,85 @@
 			});
 		});
 	}
+	// Social Share Buttons — URLs are built in JS to bypass ad-blocker
+	// cosmetic filters that hide elements whose href matches known share domains.
+	document.querySelectorAll('.ppp-share-btn').forEach(function (btn) {
+		btn.addEventListener('click', function () {
+			var platform = this.getAttribute('data-platform');
+			var url      = this.getAttribute('data-url')  || '';
+			var text     = this.getAttribute('data-text') || '';
+			var shareUrl = '';
+
+			if (platform === 'twitter') {
+				shareUrl = 'https://x.com/intent/tweet?text=' + text + '&url=' + url;
+			} else if (platform === 'facebook') {
+				shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
+			} else if (platform === 'linkedin') {
+				shareUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + url;
+			} else if (platform === 'reddit') {
+				shareUrl = 'https://reddit.com/submit?url=' + url + '&title=' + text;
+			}
+
+			if (shareUrl) {
+				var w = 600, h = 500;
+				var top  = Math.round(screen.height / 2 - h / 2);
+				var left = Math.round(screen.width  / 2 - w / 2);
+				window.open(shareUrl, 'pppShare', 'width=' + w + ',height=' + h + ',top=' + top + ',left=' + left);
+			}
+		});
+	});
+
+	// Hero Terminal Live Typing Animation
+	function initHeroTerminalTyping() {
+		var terminal = document.getElementById('hero-terminal-screen');
+		if (!terminal) return;
+
+		var lines = terminal.querySelectorAll('.typing-line');
+		if (!lines.length) return;
+
+		lines.forEach(function (line) {
+			var textEl = line.querySelector('.typing-text');
+			if (!textEl) return;
+
+			var delay = parseInt(line.getAttribute('data-delay'), 10) || 0;
+			var fullText = textEl.getAttribute('data-text') || textEl.textContent || '';
+			var hasCursor = line.getAttribute('data-cursor') === 'true';
+			var existingCursor = line.querySelector('.cli-cursor');
+
+			if (hasCursor && existingCursor) {
+				existingCursor.style.display = 'none';
+			}
+
+			textEl.textContent = '';
+
+			setTimeout(function () {
+				if (hasCursor && existingCursor) {
+					existingCursor.style.display = 'inline-block';
+				}
+
+				var charIdx = 0;
+				function typeChar() {
+					if (charIdx < fullText.length) {
+						textEl.textContent = fullText.substring(0, charIdx + 1);
+						charIdx++;
+						var jitter = 18 + Math.random() * 22;
+						setTimeout(typeChar, jitter);
+					} else {
+						textEl.textContent = fullText;
+						if (hasCursor && existingCursor) {
+							existingCursor.style.display = 'inline-block';
+						}
+					}
+				}
+
+				typeChar();
+			}, delay);
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initHeroTerminalTyping);
+	} else {
+		initHeroTerminalTyping();
+	}
 }());
