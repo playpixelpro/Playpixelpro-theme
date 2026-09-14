@@ -941,6 +941,44 @@ function ppp_render_contact_settings_page() {
 		}
 	}
 
+	// Handle Test Auto-Reply Dispatch
+	if ( isset( $_POST['ppp_send_test_autoreply'] ) && check_admin_referer( 'ppp_mail_settings_action', 'ppp_mail_settings_nonce' ) ) {
+		$test_recipient = sanitize_email( $_POST['ppp_test_recipient'] );
+		if ( ! empty( $test_recipient ) ) {
+			$default_ar_sub  = sprintf( __( '[%s] Transmission Received - Thank You!', 'playpixelpro-content' ), get_bloginfo( 'name' ) );
+			$reply_sub       = get_option( 'ppp_autoreply_subject', $default_ar_sub );
+			if ( empty( $reply_sub ) ) {
+				$reply_sub = $default_ar_sub;
+			}
+			$default_ar_body = "Greetings {username},\n\nThank you for connecting with {site_name}!\n\nWe have successfully received your transmission packet and will review your message shortly.\n\n---\nTransmission Summary:\nSender: {username}\nReturn Address: {email}\nStatus: RECEIVED & QUEUED\n\nBest regards,\nThe {site_name} Team";
+			$reply_body      = get_option( 'ppp_autoreply_body', $default_ar_body );
+			if ( empty( $reply_body ) ) {
+				$reply_body = $default_ar_body;
+			}
+
+			$current_user = wp_get_current_user();
+			$test_user    = $current_user->display_name ? $current_user->display_name : 'Admin Operative';
+			$html_email   = ppp_build_autoreply_html_email( $test_user, $test_recipient, $reply_body, $reply_sub );
+
+			$from_name  = get_option( 'ppp_smtp_from_name', get_bloginfo( 'name' ) );
+			$from_email = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
+
+			$headers = array(
+				'Content-Type: text/html; charset=UTF-8',
+			);
+			if ( ! empty( $from_name ) && ! empty( $from_email ) ) {
+				$headers[] = 'From: ' . $from_name . ' <' . $from_email . '>';
+			}
+
+			$sent = wp_mail( $test_recipient, $reply_sub, $html_email, $headers );
+			if ( $sent ) {
+				$notice = sprintf( __( 'Test HTML auto-reply email successfully delivered to %s.', 'playpixelpro-content' ), esc_html( $test_recipient ) );
+			} else {
+				$notice = __( 'Failed to dispatch test auto-reply email. Please check your SMTP configuration.', 'playpixelpro-content' );
+			}
+		}
+	}
+
 	// Handle Broadcast Newsletter
 	if ( isset( $_POST['ppp_send_newsletter_broadcast'] ) && check_admin_referer( 'ppp_mail_settings_action', 'ppp_mail_settings_nonce' ) ) {
 		$subject = sanitize_text_field( $_POST['ppp_broadcast_subject'] );
@@ -1093,7 +1131,8 @@ function ppp_render_contact_settings_page() {
 					<?php wp_nonce_field( 'ppp_mail_settings_action', 'ppp_mail_settings_nonce' ); ?>
 					<h3><?php esc_html_e( 'Test SMTP Transmission', 'playpixelpro-content' ); ?></h3>
 					<p><input type="email" name="ppp_test_recipient" value="<?php echo esc_attr( wp_get_current_user()->user_email ); ?>" class="regular-text" placeholder="recipient@example.com">
-					<input type="submit" name="ppp_send_test_email" class="button button-secondary" value="<?php esc_attr_e( 'Send Test Transmission Packet', 'playpixelpro-content' ); ?>"></p>
+					<input type="submit" name="ppp_send_test_email" class="button button-secondary" value="<?php esc_attr_e( 'Send Plain Test Email', 'playpixelpro-content' ); ?>">
+					<input type="submit" name="ppp_send_test_autoreply" class="button button-secondary" value="<?php esc_attr_e( 'Send Test HTML Auto-Reply Email', 'playpixelpro-content' ); ?>" style="margin-left: 4px;"></p>
 				</form>
 
 			<?php elseif ( 'bot' === $active_tab ) : ?>
@@ -1195,6 +1234,183 @@ function ppp_render_contact_settings_page() {
 	<?php
 }
 
+/**
+ * Generate a Terminal Modernist HTML auto-reply email.
+ * Built with full cross-client compatibility: Outlook 2007-2021 (MSO tables, XML DPI scaling, VML buttons),
+ * Yahoo! Mail, Gmail, Apple Mail, and mobile clients.
+ *
+ * @param string $username       Visitor's name.
+ * @param string $email          Visitor's email.
+ * @param string $custom_message Custom message text from settings.
+ * @param string $subject        Subject line.
+ * @return string HTML email content.
+ */
+function ppp_build_autoreply_html_email( $username, $email, $custom_message, $subject ) {
+	$site_name = get_bloginfo( 'name' );
+	$site_url  = home_url();
+
+	// Replace template tags
+	$tags = array(
+		'{username}'  => esc_html( $username ),
+		'{email}'     => esc_html( $email ),
+		'{site_name}' => esc_html( $site_name ),
+		'{site_url}'  => esc_url( $site_url ),
+	);
+	$content_formatted = str_replace( array_keys( $tags ), array_values( $tags ), $custom_message );
+	$content_html      = nl2br( esc_html( $content_formatted ) );
+	$timestamp         = current_time( 'Y-m-d H:i:s T' );
+
+	ob_start();
+	?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title><?php echo esc_html( $subject ); ?></title>
+	<!--[if gte mso 9]>
+	<xml>
+		<o:OfficeDocumentSettings>
+			<o:AllowPNG/>
+			<o:PixelsPerInch>96</o:PixelsPerInch>
+		</o:OfficeDocumentSettings>
+	</xml>
+	<![endif]-->
+	<style type="text/css">
+		body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+		table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+		img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+		body { margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #16130b; }
+		@media only screen and (max-width: 620px) {
+			.email-container { width: 100% !important; max-width: 100% !important; }
+			.card-padding { padding: 24px 18px !important; }
+			.meta-padding { padding: 0 18px 20px 18px !important; }
+		}
+	</style>
+</head>
+<body bgcolor="#16130b" style="margin: 0; padding: 0; background-color: #16130b; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; color: #e9e2d4; -webkit-font-smoothing: antialiased;">
+	<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#16130b" style="background-color: #16130b; table-layout: fixed;">
+		<tr>
+			<td align="center" style="padding: 30px 12px;">
+				<!--[if (gte mso 9)|(IE)]>
+				<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" align="center" style="width:600px;">
+				<tr>
+				<td>
+				<![endif]-->
+				<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-container" style="max-width: 600px; background-color: #1e1b13; border: 2px solid #4e4637; margin: 0 auto;">
+					
+					<!-- TERMINAL TOP WINDOW BAR -->
+					<tr>
+						<td bgcolor="#16130b" style="background-color: #16130b; padding: 12px 20px; border-bottom: 2px solid #4e4637;">
+							<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td align="left" style="font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 13px; font-weight: bold; color: #eec35e; letter-spacing: 1px;">
+										<span style="color: #ff5555; margin-right: 3px;">●</span>
+										<span style="color: #eec35e; margin-right: 3px;">●</span>
+										<span style="color: #00ff9c; margin-right: 8px;">●</span>
+										<?php echo esc_html( strtoupper( $site_name ) ); ?> // CONNECT.SH
+									</td>
+									<td align="right" style="font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 11px; color: #9a8f7d; letter-spacing: 1px;">
+										[ACK_0x00]
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+					<!-- HERO STATUS HEADER -->
+					<tr>
+						<td class="card-padding" style="padding: 32px 30px 20px 30px; text-align: left;">
+							<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 18px;">
+								<tr>
+									<td bgcolor="#16130b" style="background-color: #16130b; border: 1px solid #00ff9c; padding: 5px 12px; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 11px; font-weight: bold; color: #00ff9c; letter-spacing: 1px;">
+										● STATUS: TRANSMISSION_RECEIVED_OK
+									</td>
+								</tr>
+							</table>
+							<h1 style="margin: 0 0 12px 0; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 20px; font-weight: bold; color: #eec35e; line-height: 1.3; letter-spacing: 0.5px;">
+								TRANSMISSION_CONFIRMED
+							</h1>
+							<p style="margin: 0; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.6; color: #e9e2d4;">
+								Greetings <strong><?php echo esc_html( $username ); ?></strong>, your communication packet has been securely ingested by our terminal uplink.
+							</p>
+						</td>
+					</tr>
+
+					<!-- TELEMETRY / PACKET METADATA BOX -->
+					<tr>
+						<td class="meta-padding" style="padding: 0 30px 24px 30px;">
+							<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#16130b" style="background-color: #16130b; border: 1px dashed #4e4637;">
+								<tr>
+									<td style="padding: 16px; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.7; color: #9a8f7d;">
+										<span style="color: #eec35e; font-weight: bold;">[PACKET_TELEMETRY]</span><br />
+										<span style="color: #9a8f7d;">IDENTIFIER  :</span> <span style="color: #e9e2d4; font-weight: bold;"><?php echo esc_html( $username ); ?></span><br />
+										<span style="color: #9a8f7d;">RETURN_ADDR :</span> <span style="color: #e9e2d4;"><?php echo esc_html( $email ); ?></span><br />
+										<span style="color: #9a8f7d;">TIMESTAMP   :</span> <span style="color: #e9e2d4;"><?php echo esc_html( $timestamp ); ?></span><br />
+										<span style="color: #9a8f7d;">DISPATCH_ID :</span> <span style="color: #00ff9c;">PKT_<?php echo strtoupper( wp_generate_password( 8, false ) ); ?></span>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+					<!-- MESSAGE PAYLOAD BODY -->
+					<tr>
+						<td class="card-padding" style="padding: 0 30px 32px 30px;">
+							<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+								<tr>
+									<td style="border-left: 3px solid #eec35e; padding: 12px 0 12px 16px; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.7; color: #e9e2d4;">
+										<?php echo $content_html; ?>
+									</td>
+								</tr>
+							</table>
+
+							<!-- BULLETPROOF CALL TO ACTION BUTTON (MSO / OUTLOOK & STANDARD) -->
+							<table role="presentation" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="left">
+										<!--[if mso]>
+										<v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<?php echo esc_url( $site_url ); ?>" style="height:44px;v-text-anchor:middle;width:240px;" stroke="f" fillcolor="#eec35e">
+										<w:anchorlock/>
+										<center style="color:#16130b;font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:bold;letter-spacing:1px;">RETURN TO TERMINAL &rarr;</center>
+										</v:rect>
+										<![endif]-->
+										<a href="<?php echo esc_url( $site_url ); ?>" target="_blank" style="mso-hide:all; display: inline-block; background-color: #eec35e; color: #16130b; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 13px; font-weight: bold; padding: 12px 24px; text-decoration: none; text-transform: uppercase; border: 2px solid #eec35e; letter-spacing: 1px;">
+											[ RETURN TO TERMINAL &rarr; ]
+										</a>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+					<!-- TERMINAL FOOTER -->
+					<tr>
+						<td bgcolor="#16130b" style="background-color: #16130b; padding: 22px 30px; border-top: 2px solid #4e4637; text-align: center;">
+							<p style="margin: 0 0 6px 0; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 11px; color: #9a8f7d; letter-spacing: 0.5px;">
+								SYS_ID: PPP-TERMINAL // AUTOMATED_UPLINK_DISPATCH
+							</p>
+							<p style="margin: 0; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 11px; color: #666053;">
+								&copy; <?php echo date( 'Y' ); ?> <a href="<?php echo esc_url( $site_url ); ?>" style="color: #eec35e; text-decoration: none; font-weight: bold;"><?php echo esc_html( $site_name ); ?></a>. All rights reserved.
+							</p>
+						</td>
+					</tr>
+
+				</table>
+				<!--[if (gte mso 9)|(IE)]>
+				</td>
+				</tr>
+				</table>
+				<![endif]-->
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+	<?php
+	return ob_get_clean();
+}
+
 // 7. AJAX Contact Transmission Form Handler
 function ppp_ajax_send_contact_packet() {
 	check_ajax_referer( 'ppp_contact_nonce', 'security' );
@@ -1274,24 +1490,19 @@ function ppp_ajax_send_contact_packet() {
 				$reply_body = $default_ar_body;
 			}
 
-			$tags = array(
-				'{username}'  => $username,
-				'{email}'     => $email,
-				'{site_name}' => get_bloginfo( 'name' ),
-				'{site_url}'  => home_url(),
-			);
-			$reply_sub  = str_replace( array_keys( $tags ), array_values( $tags ), $reply_sub );
-			$reply_body = str_replace( array_keys( $tags ), array_values( $tags ), $reply_body );
+			$html_email = ppp_build_autoreply_html_email( $username, $email, $reply_body, $reply_sub );
 
 			$from_name  = get_option( 'ppp_smtp_from_name', get_bloginfo( 'name' ) );
 			$from_email = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
 
-			$reply_headers = array();
+			$reply_headers = array(
+				'Content-Type: text/html; charset=UTF-8',
+			);
 			if ( ! empty( $from_name ) && ! empty( $from_email ) ) {
 				$reply_headers[] = 'From: ' . $from_name . ' <' . $from_email . '>';
 			}
 
-			wp_mail( $email, $reply_sub, $reply_body, $reply_headers );
+			wp_mail( $email, $reply_sub, $html_email, $reply_headers );
 		}
 
 		wp_send_json_success( array( 'message' => '[SUCCESS_0x00]: TRANSMISSION_PACKET_DELIVERED_OK' ) );
