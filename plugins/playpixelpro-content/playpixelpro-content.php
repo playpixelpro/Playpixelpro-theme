@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PlayPixelPro Content
  * Description: Content types, settings, and shortcodes for the PlayPixelPro ClassicPress site.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: PlayPixelPro
  * Requires PHP: 7.4
  * License: Proprietary
@@ -911,7 +911,11 @@ function ppp_render_contact_settings_page() {
 			}
 			update_option( 'ppp_smtp_from_email', sanitize_email( $_POST['ppp_smtp_from_email'] ) );
 			update_option( 'ppp_smtp_from_name', sanitize_text_field( $_POST['ppp_smtp_from_name'] ) );
-			$notice = __( 'SMTP Settings saved successfully.', 'playpixelpro-content' );
+			update_option( 'ppp_contact_destination_email', sanitize_email( $_POST['ppp_contact_destination_email'] ) );
+			update_option( 'ppp_autoreply_enabled', isset( $_POST['ppp_autoreply_enabled'] ) );
+			update_option( 'ppp_autoreply_subject', sanitize_text_field( $_POST['ppp_autoreply_subject'] ) );
+			update_option( 'ppp_autoreply_body', sanitize_textarea_field( $_POST['ppp_autoreply_body'] ) );
+			$notice = __( 'SMTP & Auto-Reply Settings saved successfully.', 'playpixelpro-content' );
 		} elseif ( 'bot' === $active_tab ) {
 			update_option( 'ppp_bot_provider', sanitize_key( $_POST['ppp_bot_provider'] ) );
 			update_option( 'ppp_bot_site_key', sanitize_text_field( $_POST['ppp_bot_site_key'] ) );
@@ -966,8 +970,14 @@ function ppp_render_contact_settings_page() {
 	$smtp_enc     = get_option( 'ppp_smtp_encryption', 'tls' );
 	$smtp_user    = get_option( 'ppp_smtp_user', '' );
 	$smtp_pass    = get_option( 'ppp_smtp_pass', '' );
-	$from_email   = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
-	$from_name    = get_option( 'ppp_smtp_from_name', get_bloginfo( 'name' ) );
+	$from_email        = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
+	$from_name         = get_option( 'ppp_smtp_from_name', get_bloginfo( 'name' ) );
+	$dest_email        = get_option( 'ppp_contact_destination_email', get_bloginfo( 'admin_email' ) );
+	$autoreply_enabled = get_option( 'ppp_autoreply_enabled', false );
+	$default_ar_sub    = sprintf( __( '[%s] Transmission Received - Thank You!', 'playpixelpro-content' ), get_bloginfo( 'name' ) );
+	$autoreply_subject = get_option( 'ppp_autoreply_subject', $default_ar_sub );
+	$default_ar_body   = "Greetings {username},\n\nThank you for connecting with {site_name}!\n\nWe have successfully received your transmission packet and will review your message shortly.\n\n---\nTransmission Summary:\nSender: {username}\nReturn Address: {email}\nStatus: RECEIVED & QUEUED\n\nBest regards,\nThe {site_name} Team";
+	$autoreply_body    = get_option( 'ppp_autoreply_body', $default_ar_body );
 
 	$bot_provider = get_option( 'ppp_bot_provider', 'none' );
 	$bot_site_key = get_option( 'ppp_bot_site_key', '' );
@@ -1039,6 +1049,38 @@ function ppp_render_contact_settings_page() {
 						<tr>
 							<th scope="row"><?php esc_html_e( 'From Sender Name', 'playpixelpro-content' ); ?></th>
 							<td><input type="text" name="ppp_smtp_from_name" value="<?php echo esc_attr( $from_name ); ?>" class="regular-text"></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Contact Notification Destination Email', 'playpixelpro-content' ); ?></th>
+							<td>
+								<input type="email" name="ppp_contact_destination_email" value="<?php echo esc_attr( $dest_email ); ?>" class="regular-text" placeholder="juan@email.com">
+								<p class="description"><?php esc_html_e( 'The inbox address where messages sent via the [CONNECT.SH] contact form will be delivered. Defaults to the site admin email.', 'playpixelpro-content' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<h3 style="margin-top: 30px;"><?php esc_html_e( 'Auto-Reply / Thank-You Confirmation Settings', 'playpixelpro-content' ); ?></h3>
+					<p><?php esc_html_e( 'Automatically send a thank-you confirmation packet back to the visitor after they submit a message.', 'playpixelpro-content' ); ?></p>
+
+					<table class="form-table">
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Enable Auto-Reply', 'playpixelpro-content' ); ?></th>
+							<td>
+								<label><input type="checkbox" name="ppp_autoreply_enabled" value="1" <?php checked( $autoreply_enabled ); ?>> <?php esc_html_e( 'Send automated confirmation email back to the visitor', 'playpixelpro-content' ); ?></label>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Auto-Reply Subject', 'playpixelpro-content' ); ?></th>
+							<td>
+								<input type="text" name="ppp_autoreply_subject" value="<?php echo esc_attr( $autoreply_subject ); ?>" class="large-text">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Auto-Reply Message Body', 'playpixelpro-content' ); ?></th>
+							<td>
+								<textarea name="ppp_autoreply_body" rows="8" class="large-text code"><?php echo esc_textarea( $autoreply_body ); ?></textarea>
+								<p class="description"><?php esc_html_e( 'Available template placeholders: {username}, {email}, {site_name}, {site_url}', 'playpixelpro-content' ); ?></p>
+							</td>
 						</tr>
 					</table>
 
@@ -1195,8 +1237,11 @@ function ppp_ajax_send_contact_packet() {
 		);
 	}
 
-	// Send Email to Admin
-	$admin_email = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
+	// Send Email to Admin / Configured Destination
+	$admin_email = get_option( 'ppp_contact_destination_email', get_bloginfo( 'admin_email' ) );
+	if ( empty( $admin_email ) ) {
+		$admin_email = get_bloginfo( 'admin_email' );
+	}
 	$subject     = '[CONNECT.SH] Transmission Packet from ' . $username;
 	$body        = "SECURITY ENCRYPTED TRANSMISSION PACKET\n";
 	$body       .= "========================================\n\n";
@@ -1214,6 +1259,41 @@ function ppp_ajax_send_contact_packet() {
 	$sent = wp_mail( $admin_email, $subject, $body, $headers );
 
 	if ( $sent ) {
+		// Send Thank-You Auto-Reply to visitor if enabled and email is active
+		$autoreply_enabled = get_option( 'ppp_autoreply_enabled', false );
+		if ( $autoreply_enabled && is_email( $email ) ) {
+			$default_ar_sub  = sprintf( __( '[%s] Transmission Received - Thank You!', 'playpixelpro-content' ), get_bloginfo( 'name' ) );
+			$reply_sub       = get_option( 'ppp_autoreply_subject', $default_ar_sub );
+			if ( empty( $reply_sub ) ) {
+				$reply_sub = $default_ar_sub;
+			}
+
+			$default_ar_body = "Greetings {username},\n\nThank you for connecting with {site_name}!\n\nWe have successfully received your transmission packet and will review your message shortly.\n\n---\nTransmission Summary:\nSender: {username}\nReturn Address: {email}\nStatus: RECEIVED & QUEUED\n\nBest regards,\nThe {site_name} Team";
+			$reply_body      = get_option( 'ppp_autoreply_body', $default_ar_body );
+			if ( empty( $reply_body ) ) {
+				$reply_body = $default_ar_body;
+			}
+
+			$tags = array(
+				'{username}'  => $username,
+				'{email}'     => $email,
+				'{site_name}' => get_bloginfo( 'name' ),
+				'{site_url}'  => home_url(),
+			);
+			$reply_sub  = str_replace( array_keys( $tags ), array_values( $tags ), $reply_sub );
+			$reply_body = str_replace( array_keys( $tags ), array_values( $tags ), $reply_body );
+
+			$from_name  = get_option( 'ppp_smtp_from_name', get_bloginfo( 'name' ) );
+			$from_email = get_option( 'ppp_smtp_from_email', get_bloginfo( 'admin_email' ) );
+
+			$reply_headers = array();
+			if ( ! empty( $from_name ) && ! empty( $from_email ) ) {
+				$reply_headers[] = 'From: ' . $from_name . ' <' . $from_email . '>';
+			}
+
+			wp_mail( $email, $reply_sub, $reply_body, $reply_headers );
+		}
+
 		wp_send_json_success( array( 'message' => '[SUCCESS_0x00]: TRANSMISSION_PACKET_DELIVERED_OK' ) );
 	} else {
 		wp_send_json_error( array( 'message' => '[ERROR_0x04]: TRANSMISSION_UPLINK_FAILED' ) );
