@@ -43,6 +43,7 @@ $show_gaming   = get_theme_mod( 'playpixelpro_show_gaming', true );
 $services_title       = get_theme_mod( 'playpixelpro_services_title', '01_Services' );
 $projects_title       = get_theme_mod( 'playpixelpro_projects_title', '02_Projects' );
 $support_title        = get_theme_mod( 'playpixelpro_support_title', '03_Support' );
+$support_description  = get_theme_mod( 'playpixelpro_support_description', __( 'Support the channel and get exclusive access to content, early releases, and more.', 'playpixelpro' ) );
 $gaming_title         = get_theme_mod( 'playpixelpro_gaming_title', '04_Gaming & Streams' );
 $latest_entries_title = get_theme_mod( 'playpixelpro_latest_entries_title', 'latest_entries' );
 
@@ -321,9 +322,11 @@ if ( $entries_count < 3 || $entries_count > 9 ) {
 		</div>
 
 		<div class="brutalist-card" style="margin-bottom: 32px;">
-			<p style="margin-top: 0; font-size: 1.05rem;">
-				Support the channel and get exclusive access to content, early releases, and more.
-			</p>
+			<?php if ( ! empty( $support_description ) ) : ?>
+				<p style="margin-top: 0; font-size: 1.05rem;">
+					<?php echo esc_html( $support_description ); ?>
+				</p>
+			<?php endif; ?>
 			<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; align-items: center;">
 				<?php
 				$profiles_query = new WP_Query(

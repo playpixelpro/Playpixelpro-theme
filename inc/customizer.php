@@ -492,6 +492,22 @@ function playpixelpro_customize_register( $wp_customize ) {
 	);
 
 	$wp_customize->add_setting(
+		'playpixelpro_support_description',
+		array(
+			'default'           => __( 'Support the channel and get exclusive access to content, early releases, and more.', 'playpixelpro' ),
+			'sanitize_callback' => 'sanitize_textarea_field',
+		)
+	);
+	$wp_customize->add_control(
+		'playpixelpro_support_description',
+		array(
+			'label'    => __( 'Section 03 Description', 'playpixelpro' ),
+			'section'  => 'playpixelpro_frontpage_sections',
+			'type'     => 'textarea',
+		)
+	);
+
+	$wp_customize->add_setting(
 		'playpixelpro_gaming_title',
 		array(
 			'default'           => '04_Gaming & Streams',
