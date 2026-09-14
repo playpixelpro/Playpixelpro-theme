@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PlayPixelPro Content
  * Description: Content types, settings, and shortcodes for the PlayPixelPro ClassicPress site.
- * Version: 2.0.0
+ * Version: 3.0.0
  * Author: PlayPixelPro
  * Requires PHP: 7.4
  * License: Proprietary

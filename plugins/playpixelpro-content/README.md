@@ -3,7 +3,7 @@
 [![ClassicPress Compatible](https://img.shields.io/badge/ClassicPress-v4.9%2B-blue.svg)](https://www.classicpress.net/)
 [![WordPress Compatible](https://img.shields.io/badge/WordPress-v5.0%2B-green.svg)](https://wordpress.org/)
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://www.php.net/)
-[![Version](https://img.shields.io/badge/version-2.0.0-amber.svg)](playpixelpro-content.php)
+[![Version](https://img.shields.io/badge/version-3.0.0-amber.svg)](playpixelpro-content.php)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
 **PlayPixelPro Content** is the official companion plugin for the **PlayPixelPro** Terminal Modernist theme. It powers custom content architectures (CPTs), terminal contact communications, custom SMTP delivery, bot fight spam protection, newsletter subscriptions, and automated confirmation transmissions.

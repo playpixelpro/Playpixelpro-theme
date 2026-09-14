@@ -56,7 +56,7 @@ function playpixelpro_assets() {
 	);
 
 	// Enqueue Main Theme Stylesheet (with automatic cache busting based on file modification time)
-	$style_ver = file_exists( get_template_directory() . '/style.css' ) ? filemtime( get_template_directory() . '/style.css' ) : '1.4.1';
+	$style_ver = file_exists( get_template_directory() . '/style.css' ) ? filemtime( get_template_directory() . '/style.css' ) : '2.0.0';
 	wp_enqueue_style(
 		'playpixelpro',
 		get_stylesheet_uri(),

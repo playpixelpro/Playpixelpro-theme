@@ -3,7 +3,7 @@
 [![ClassicPress Compatible](https://img.shields.io/badge/ClassicPress-v4.9%2B-blue.svg)](https://www.classicpress.net/)
 [![WordPress Compatible](https://img.shields.io/badge/WordPress-v5.0%2B-green.svg)](https://wordpress.org/)
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://www.php.net/)
-[![Version](https://img.shields.io/badge/version-1.4.0-amber.svg)](style.css)
+[![Version](https://img.shields.io/badge/version-2.0.0-amber.svg)](style.css)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
 **PlayPixelPro** is a lightweight, responsive, Terminal Modernist theme built for **ClassicPress** and **WordPress**. Designed with a high-contrast dark aesthetic, amber gold accents, retro CRT scanline overlays, and blinking CLI cursors, PlayPixelPro offers a unique retro-futuristic interface ideal for developer portfolios, tech blogs, and digital product showcases.
